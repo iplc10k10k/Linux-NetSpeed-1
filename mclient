@@ -1,0 +1,74 @@
+
+#vps server ip
+server=xxx.xx.x.x
+
+#server port
+pport=11111
+
+#if you want random port
+#su=$(echo `head -n 128 /dev/urandom | tr -dc "123456789" | head -c1`)
+#pport=1111$su
+
+#for vpn lan ip 
+serlantou=10.111.111
+serlanip=$serlantou.88/24
+
+# minivtun password
+passw_d=xxxxxxx
+
+
+#ips via v-p--n  , pls follow the rules
+riproute="1.1.1.1/32 1.1.1.0/24 139.162.23.4/32"
+
+
+mvpn=minivtun
+#if you want to set two minivtun -- use --  ln -s /usr/sbin/minivtun  /usr/sbin/minivtu01
+#mvpn=minivtu01
+
+########################################################################################################################################
+###you have to fill the info upstair
+########################################################################################################################################
+
+serip=$server:$pport
+m_tu=1420
+t_un=tun1111
+
+
+killall $mvpn
+iptables -t nat -D POSTROUTING -o $t_un -j MASQUERADE
+iptables -D FORWARD -i $t_un -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -D FORWARD -o $t_un -j ACCEPT
+iptables -D INPUT -s $serlantou.0/24  -p tcp --dport 1:1999  -j DROP 
+iptables -D INPUT -s $serlantou.0/24  -p udp --dport 1:1999  -j DROP 
+
+echo minivtun stopped ;echo minivtun stopped ;echo minivtun stopped ;
+
+sleep 3
+$mvpn -r $serip -a $serlanip -e $passw_d  -m $m_tu  -n $t_un  -t rc4 -d
+sleep 6
+
+iptables -t nat -A POSTROUTING -o $t_un  -j MASQUERADE
+iptables -I FORWARD 1 -i $t_un -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -I FORWARD 1 -o $t_un -j ACCEPT
+iptables -A INPUT -s $serlantou.0/24  -p tcp --dport 1:1999  -j DROP 
+iptables -A INPUT -s $serlantou.0/24  -p udp --dport 1:1999  -j DROP 
+
+
+sleep 3
+ping $serlantou.1 -c 3 -W 1
+
+
+for iii in $riproute
+do
+	ip route add $iii dev  $t_un  metric 888
+done
+
+echo finished finished finished
+echo finished finished finished
+echo finished finished finished
+echo finished finished finished
+
+exit 0;
+
+   route add 139.162.23.4 dev tun6663
+   wget http://139.162.23.4/100MB-singapore.bin --output-document=/dev/null;  
